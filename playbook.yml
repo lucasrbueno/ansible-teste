@@ -1,0 +1,61 @@
+---
+- hosts: exemplo
+  remote_user: analista
+  become: yes
+  tasks:
+
+  - name: Instala o  MySQL
+    apt: name=mysql-server state=present
+
+  - name: Instala o Nodejs
+    apt: name=nodejs state=present
+
+  - name: Adiciona a chave do Docker GPG
+    apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+  - name: Adiciona o repositorio Docker
+    apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+
+  - name: Atualiza o apt e instala o docker-ce
+    apt: name=docker-ce state=latest
+
+  - name: Instala a ultima versao do Maven Apache
+    apt: name=maven state=present
+
+  - name: Instala o PIP
+    apt: name=python-pip state=latest
+
+  - name: Instala o PIP3
+    apt: name=python3-pip state=latest
+
+  - name: Instala o módulo do Docker para python
+    pip:
+        name: docker
+
+  - name: Puxa a imagem padrão do Docker
+    docker_image:
+        name: ubuntu
+        source: pull
+
+  - name: Executa o container no MySQL
+    docker_container:
+     name: banco
+     image: mysql:5.6
+     env:
+       MYSQL_ROOT_PASSWORD: s
+
+  - name: Executa o container Wordpress
+    docker_container:
+     name: wordpress
+     image: wordpress
+     links:
+       - banco:mysql
+     ports:
+       - 80:80          
+
+  - name: Instala o Java 11 SDK
+    apt: name=openjdk-11-jdk state=present
